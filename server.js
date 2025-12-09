@@ -76,7 +76,9 @@ app.get('/api/judgeme', async (req, res) => {
     const pagination = {
       current_page: currentPage,
       per_page: perPage,
-      total: totalReviews,
+      total_reviews: totalReviews,
+      total_pages: lastPage,
+      current_page_count: data.reviews?.length || 0,
       first: buildUrl(1),
       prev: currentPage > 1 ? buildUrl(currentPage - 1) : null,
       next: currentPage < lastPage ? buildUrl(currentPage + 1) : null,
