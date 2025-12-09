@@ -1,17 +1,29 @@
 import express from 'express';
 import cors from 'cors';
+import dotenv from 'dotenv';
+
+dotenv.config({ path: '.env.local' });
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type']
+}));
 app.use(express.json());
+
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', message: 'Judge.me Proxy API is running' });
+});
 
 app.get('/api/judgeme', async (req, res) => {
   try {
     const { 
-      shop_domain = 'avoria-liquids-shop.myshopify.com', 
-      api_token = 'NEPVyiXra7OSexIs3O_2ogOhhp8',
+      shop_domain = process.env.JUDGEME_SHOP_DOMAIN, 
+      api_token = process.env.JUDGEME_API_TOKEN,
       product_external_id,
       ...params 
     } = req.query;
@@ -73,7 +85,8 @@ app.get('/api/judgeme', async (req, res) => {
 
     res.status(200).json({ ...data, pagination });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch reviews' });
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Failed to fetch reviews', details: error.message });
   }
 });
 
