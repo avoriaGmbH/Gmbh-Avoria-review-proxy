@@ -85,7 +85,25 @@ app.get('/api/judgeme', async (req, res) => {
       last: buildUrl(lastPage)
     };
 
-    res.status(200).json({ ...data, pagination });
+    let averageRating = null;
+
+    // Calculate average rating if product is specified
+    if (productId && totalReviews > 0) {
+      const allReviewsUrl = `https://judge.me/api/v1/reviews?shop_domain=${shop_domain}&api_token=${api_token}&product_id=${productId}&per_page=${totalReviews}`;
+      const allReviewsResponse = await fetch(allReviewsUrl);
+      const allReviewsData = await allReviewsResponse.json();
+      
+      if (allReviewsData.reviews && allReviewsData.reviews.length > 0) {
+        const totalRating = allReviewsData.reviews.reduce((sum, review) => sum + (review.rating || 0), 0);
+        averageRating = (totalRating / allReviewsData.reviews.length).toFixed(2);
+      }
+    }
+
+    res.status(200).json({ 
+      ...data, 
+      pagination,
+      average_rating: averageRating ? parseFloat(averageRating) : null
+    });
   } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ error: 'Failed to fetch reviews', details: error.message });
